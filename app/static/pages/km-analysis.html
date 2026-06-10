@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KM-анализ - KM Jobs Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .km-stats {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .function-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .function-name {
+            font-weight: bold;
+        }
+        .function-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Анализ функций управления знаниями</h1>
+
+        <div class="nav-links">
+            <a href="/" class="nav-btn">🏠 Главная</a>
+            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
+            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
+            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
+        </div>
+
+        <div class="km-stats" id="km-stats">
+            <h3>📊 Распределение функций KM по вакансиям</h3>
+            <div id="function-distribution"></div>
+            <p id="km-summary"></p>
+        </div>
+
+        <h2>🔍 Проверить вакансию на KM-функции</h2>
+        <input type="text" id="vacancyId" placeholder="Введите ID вакансии (например, 78901234)" style="width: 300px;">
+        <button onclick="analyzeVacancy()">Анализировать</button>
+
+        <div id="vacancy-analysis" style="margin-top: 20px;"></div>
+
+        <footer>
+            <p>🎓 KM Jobs Analyzer - Анализ рынка труда</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        async function loadKMStatistics() {
+            const data = await App.fetchAPI('/km-analysis/statistics');
+            if (data) {
+                const container = document.getElementById('function-distribution');
+                const distribution = data.function_distribution || {};
+
+                container.innerHTML = Object.entries(distribution).map(([func, count]) => `
+                    <div class="function-item">
+                        <span class="function-name">${func}</span>
+                        <span class="function-count">${count} вакансий</span>
+                    </div>
+                `).join('');
+
+                document.getElementById('km-summary').innerHTML = `
+                    <strong>📈 Всего вакансий в выборке:</strong> ${data.total_vacancies}<br>
+                    <strong>🎯 Вакансий с функциями KM:</strong> ${data.vacancies_with_km}
+                `;
+            }
+        }
+
+        async function analyzeVacancy() {
+            const vacancyId = document.getElementById('vacancyId').value;
+            if (!vacancyId) {
+                App.showToast('Введите ID вакансии', 'error');
+                return;
+            }
+
+            const result = await App.fetchAPI(`/km-analysis/vacancy/${vacancyId}`);
+            const container = document.getElementById('vacancy-analysis');
+
+            if (result && !result.detail) {
+                container.innerHTML = `
+                    <div class="km-stats">
+                        <h3>📄 Результат анализа вакансии "${result.title}"</h3>
+                        <p><strong>Найдено функций KM:</strong> ${result.count || 0} из 5</p>
+                        <p><strong>Степень релевантности:</strong> ${Math.round((result.score || 0) * 100)}%</p>
+                        <p><strong>Обнаруженные функции:</strong> ${result.functions?.join(', ') || 'Не найдены'}</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<div class="km-stats" style="background: #fee;">❌ Вакансия с ID ${vacancyId} не найдена</div>`;
+            }
+        }
+
+        loadKMStatistics();
+    </script>
+</body>
+</html>

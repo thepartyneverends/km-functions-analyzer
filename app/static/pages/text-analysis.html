@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ текста - KM Jobs Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .analysis-result {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .function-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.85em;
+        }
+        .score-high { background: #27ae60; }
+        .score-medium { background: #f39c12; }
+        .score-low { background: #e74c3c; }
+        .term-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .term-item {
+            background: #e8e8e8;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+        .term-count {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .batch-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: var(--light-bg);
+            border-radius: 10px;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Анализ текста вакансий</h1>
+
+        <div class="nav-links">
+            <a href="/" class="nav-btn">🏠 Главная</a>
+            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
+            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
+            <a href="/pages/text-analysis.html" class="nav-btn">📝 Анализ текста</a>
+            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
+        </div>
+
+        <div id="batch-stats" class="batch-stats"></div>
+
+        <h2>🔍 Анализ конкретной вакансии</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="vacancySelect" style="flex: 1; padding: 10px;">
+                <option value="">Выберите вакансию...</option>
+            </select>
+            <button onclick="analyzeSelectedVacancy()">Анализировать</button>
+        </div>
+
+        <div id="single-analysis" class="analysis-result"></div>
+
+        <h2>📊 Результаты пакетного анализа</h2>
+        <div id="batch-analysis"></div>
+
+        <h2>🏆 Топ терминов по всем вакансиям</h2>
+        <div id="top-terms" class="term-list"></div>
+
+        <footer>
+            <p>🎓 KM Jobs Analyzer - Анализ текста вакансий с помощью NLTK и лемматизации</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        let vacancies = [];
+
+        async function loadVacanciesList() {
+            const data = await App.fetchAPI('/vacancies?limit=50&offset=0');
+            if (data && data.vacancies) {
+                vacancies = data.vacancies;
+                const select = document.getElementById('vacancySelect');
+                select.innerHTML = '<option value="">Выберите вакансию...</option>' +
+                    vacancies.map(v => `<option value="${v.id}">${v.name} (${v.employer?.name || '—'})</option>`).join('');
+            }
+        }
+
+        async function analyzeSelectedVacancy() {
+            const select = document.getElementById('vacancySelect');
+            const vacancyId = select.value;
+            if (!vacancyId) return;
+
+            const container = document.getElementById('single-analysis');
+            container.innerHTML = '<p>🔄 Анализ... (используется NLTK и pymorphy2)</p>';
+
+            const result = await App.fetchAPI(`/text-analysis/vacancy/${vacancyId}`);
+            if (result && result.analysis && result.analysis.has_text) {
+                const analysis = result.analysis;
+                const score = analysis.score;
+                let scoreClass = 'score-low';
+                if (score >= 0.5) scoreClass = 'score-high';
+                else if (score >= 0.2) scoreClass = 'score-medium';
+
+                container.innerHTML = `
+                    <h3>📄 ${result.title}</h3>
+                    <p><strong>🏢 Компания:</strong> ${result.employer || '—'}</p>
+                    <p><strong>🎯 Оценка релевантности KM:</strong> <span class="function-badge ${scoreClass}">${Math.round(score * 100)}%</span></p>
+                    <p><strong>🔧 Найденные функции KM:</strong> ${analysis.functions.map(f => `<span class="function-badge">${f}</span>`).join('') || '—'}</p>
+                    <p><strong>📊 Всего лемм в тексте:</strong> ${analysis.total_lemmas}</p>
+                    <p><strong>🏆 Топ терминов:</strong></p>
+                    <div class="term-list">
+                        ${analysis.top_terms.map(t => `<span class="term-item">${t.word}<span class="term-count">(${t.count})</span></span>`).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<div class="analysis-result"><p>❌ Нет текста для анализа у этой вакансии</p></div>`;
+            }
+        }
+
+        async function loadBatchAnalysis() {
+            const data = await App.fetchAPI('/text-analysis/batch?limit=20');
+            if (data) {
+                // Статистика
+                const statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-number">${data.total_analyzed}</div>
+                        <div>Проанализировано</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.vacancies_with_km}</div>
+                        <div>С функциями KM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${Math.round(data.average_km_score * 100)}%</div>
+                        <div>Средний показатель KM</div>
+                    </div>
+                `;
+                document.getElementById('batch-stats').innerHTML = statsHtml;
+
+                // Таблица результатов
+                const tableHtml = `
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr><th>ID</th><th>Название</th><th>KM Score</th><th>KM Functions</th></tr>
+                        </thead>
+                        <tbody>
+                            ${data.results.map(r => `
+                                <tr>
+                                    <td>${r.id}</td>
+                                    <td>${r.title}</td>
+                                    <td>${Math.round(r.km_score * 100)}%</td>
+                                    <td>${r.km_functions.join(', ') || '—'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('batch-analysis').innerHTML = tableHtml;
+            }
+        }
+
+        async function loadTopTerms() {
+            const data = await App.fetchAPI('/text-analysis/top-terms?limit=20');
+            if (data && data.top_terms) {
+                const termsHtml = data.top_terms.map(t =>
+                    `<span class="term-item">${t.word}<span class="term-count">(${t.count})</span></span>`
+                ).join('');
+                document.getElementById('top-terms').innerHTML = termsHtml;
+            }
+        }
+
+        loadVacanciesList();
+        loadBatchAnalysis();
+        loadTopTerms();
+    </script>
+</body>
+</html>

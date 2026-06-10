@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Data
+data/vacancies_2020.csv
+
+# Models (если большие)
+models/*.joblib
+
+# Secrets
+.env

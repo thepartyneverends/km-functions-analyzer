@@ -1,0 +1,363 @@
+
+:root {
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --secondary-color: #2c3e50;
+    --success-color: #28a745;
+    --danger-color: #e74c3c;
+    --light-bg: #f8f9fa;
+    --dark-bg: #343a40;
+    --text-dark: #2c3e50;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+/* Базовые стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    color: var(--text-dark);
+}
+
+/* Контейнер */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    padding: 30px 40px;
+}
+
+/* Заголовки */
+h1 {
+    color: var(--secondary-color);
+    border-bottom: 3px solid var(--primary-color);
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    font-size: 2em;
+}
+
+h1 .emoji {
+    font-size: 1.1em;
+}
+
+h2 {
+    color: var(--secondary-color);
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 15px;
+}
+
+h3 {
+    color: var(--secondary-color);
+    margin: 20px 0 10px 0;
+    font-size: 1.2em;
+}
+
+/* Карточки эндпоинтов */
+.endpoint {
+    background: var(--light-bg);
+    border-left: 4px solid var(--primary-color);
+    padding: 15px 20px;
+    margin: 15px 0;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.endpoint:hover {
+    transform: translateX(5px);
+    box-shadow: var(--shadow-md);
+}
+
+.endpoint strong {
+    color: var(--secondary-color);
+    font-size: 1.05em;
+}
+
+.endpoint p {
+    margin: 8px 0 0 0;
+    color: var(--text-muted);
+}
+
+.endpoint code {
+    display: inline-block;
+    margin-top: 8px;
+}
+
+/* Код */
+code {
+    background: #e8e8e8;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #e83e8c;
+}
+
+pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 15px 0;
+}
+
+pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+}
+
+/* Ссылки */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* Бейджи */
+.badge {
+    display: inline-block;
+    background: var(--success-color);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.7em;
+    font-weight: 600;
+    margin-right: 10px;
+    text-transform: uppercase;
+}
+
+.badge.blue {
+    background: var(--primary-color);
+}
+
+.badge.orange {
+    background: #fd7e14;
+}
+
+/* Документация */
+.docs-links {
+    background: #e8f4f8;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin: 30px 0;
+    text-align: center;
+}
+
+.docs-links a {
+    margin: 0 15px;
+    font-size: 1.05em;
+}
+
+.docs-links a:hover {
+    text-decoration: underline;
+}
+
+/* Таблицы */
+.table-wrapper {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+tr:hover {
+    background: rgba(52, 152, 219, 0.05);
+}
+
+/* Статусы */
+.status-ok {
+    color: var(--success-color);
+}
+
+.status-error {
+    color: var(--danger-color);
+}
+
+.status-pending {
+    color: #fd7e14;
+}
+
+/* Формы */
+input, select, textarea {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 100%;
+    max-width: 400px;
+    transition: var(--transition);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+button, .button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+button:hover, .button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Утилиты */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+.mt-40 { margin-top: 40px; }
+.mb-40 { margin-bottom: 40px; }
+
+/* Футер */
+footer {
+    margin-top: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+}
+
+/* Медиа-запросы (адаптивность) */
+@media (max-width: 768px) {
+    body {
+        padding: 20px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+
+    .endpoint {
+        padding: 12px 15px;
+    }
+
+    .docs-links a {
+        display: inline-block;
+        margin: 10px;
+    }
+
+    th, td {
+        padding: 8px 10px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.3em;
+    }
+
+    code {
+        font-size: 0.75em;
+        word-break: break-all;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}

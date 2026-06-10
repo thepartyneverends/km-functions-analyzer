@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кластеризация вакансий - KM Jobs Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.1.min.js" charset="utf-8"></script>
+    <style>
+        .cluster-card {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid;
+        }
+        .cluster-card h3 {
+            margin-top: 0;
+        }
+        .term-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.8em;
+        }
+        .term-weight {
+            opacity: 0.7;
+            margin-left: 5px;
+        }
+        .cluster-0 { border-left-color: #3498db; }
+        .cluster-1 { border-left-color: #e74c3c; }
+        .cluster-2 { border-left-color: #2ecc71; }
+        .cluster-3 { border-left-color: #f39c12; }
+        .cluster-4 { border-left-color: #9b59b6; }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        .viz-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: var(--shadow-sm);
+        }
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .stat-box {
+            flex: 1;
+            background: var(--light-bg);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Кластеризация вакансий</h1>
+
+        <div class="nav-links">
+            <a href="/" class="nav-btn">🏠 Главная</a>
+            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
+            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
+            <a href="/pages/text-analysis.html" class="nav-btn">📝 Анализ текста</a>
+            <a href="/pages/clustering.html" class="nav-btn">📊 Кластеризация</a>
+            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <button id="runClusteringBtn" onclick="runClustering()">🚀 Запустить кластеризацию</button>
+        </div>
+
+        <div id="clusteringStatus"></div>
+
+        <div id="clusterVisualization" class="viz-container" style="display: none;">
+            <h3>📈 Визуализация кластеров (PCA)</h3>
+            <div id="scatterPlot"></div>
+        </div>
+
+        <div id="clusterStats" style="display: none;">
+            <div class="stats-row" id="statsBoxes"></div>
+            <h3>📋 Детальная информация по кластерам</h3>
+            <div id="clustersInfo"></div>
+        </div>
+
+        <footer>
+            <p>🎓 KM Jobs Analyzer - Кластеризация вакансий с помощью KMeans и TF-IDF</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        async function runClustering() {
+            const btn = document.getElementById('runClusteringBtn');
+            const statusDiv = document.getElementById('clusteringStatus');
+            const vizDiv = document.getElementById('clusterVisualization');
+            const statsDiv = document.getElementById('clusterStats');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Выполняется кластеризация...';
+            statusDiv.innerHTML = '<p>🔄 Кластеризация запущена. Это может занять несколько секунд...</p>';
+
+            try {
+                // Запуск кластеризации с 4 кластерами
+                const response = await fetch('/api/v1/clustering/run?n_clusters=4', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    statusDiv.innerHTML = `
+                        <div class="stats-row">
+                            <div class="stat-box"><div class="stat-number">${data.n_clusters}</div><div>Кластеров</div></div>
+                            <div class="stat-box"><div class="stat-number">${data.silhouette_score}</div><div>Silhouette Score</div></div>
+                            <div class="stat-box"><div class="stat-number">${data.total_vacancies_analyzed}</div><div>Вакансий проанализировано</div></div>
+                        </div>
+                    `;
+
+                    // Отображение визуализации
+                    await loadVisualization();
+
+                    // Отображение информации о кластерах
+                    displayClusterInfo(data.cluster_top_terms, data.cluster_sizes);
+
+                    vizDiv.style.display = 'block';
+                    statsDiv.style.display = 'block';
+                } else {
+                    statusDiv.innerHTML = `<div class="analysis-result" style="background: #fee;">❌ Ошибка: ${data.error || 'Неизвестная ошибка'}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="analysis-result" style="background: #fee;">❌ Ошибка при выполнении кластеризации: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Запустить кластеризацию';
+            }
+        }
+
+        async function loadVisualization() {
+            try {
+                const response = await fetch('/api/v1/clustering/visualization');
+                const data = await response.json();
+
+                if (data.x && data.y) {
+                    const trace = {
+                        x: data.x,
+                        y: data.y,
+                        mode: 'markers',
+                        type: 'scatter',
+                        text: data.labels.map(l => `Кластер ${l}`),
+                        marker: {
+                            size: 12,
+                            color: data.labels,
+                            colorscale: 'Viridis',
+                            showscale: true,
+                            colorbar: { title: 'Кластер' }
+                        }
+                    };
+
+                    const layout = {
+                        title: 'Визуализация кластеров вакансий (PCA)',
+                        xaxis: { title: 'Первая главная компонента' },
+                        yaxis: { title: 'Вторая главная компонента' },
+                        hovermode: 'closest',
+                        height: 500
+                    };
+
+                    Plotly.newPlot('scatterPlot', [trace], layout);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки визуализации:', error);
+                document.getElementById('scatterPlot').innerHTML = '<p>❌ Не удалось загрузить визуализацию</p>';
+            }
+        }
+
+        function displayClusterInfo(clusterTerms, clusterSizes) {
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'];
+            const containersDiv = document.getElementById('statsBoxes');
+            const clustersDiv = document.getElementById('clustersInfo');
+
+            // Статистические карточки
+            containersDiv.innerHTML = Object.entries(clusterSizes).map(([cluster, size]) => `
+                <div class="stat-box" style="border-top: 3px solid ${colors[cluster % colors.length]}">
+                    <div class="stat-number">Кластер ${cluster}</div>
+                    <div>${size} вакансий</div>
+                </div>
+            `).join('');
+
+            // Детальная информация
+            clustersDiv.innerHTML = Object.entries(clusterTerms).map(([cluster, terms]) => `
+                <div class="cluster-card cluster-${cluster % 5}">
+                    <h3>📌 Кластер ${cluster}</h3>
+                    <p><strong>Размер кластера:</strong> ${clusterSizes[cluster]} вакансий</p>
+                    <p><strong>🏆 Ключевые термины:</strong></p>
+                    <div>
+                        ${terms.slice(0, 10).map(term => `
+                            <span class="term-badge">${term[0]}<span class="term-weight">(${term[1]})</span></span>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Автоматически запускаем кластеризацию при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            runClustering();
+        });
+    </script>
+</body>
+</html>

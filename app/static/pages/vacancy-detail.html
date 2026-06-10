@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали вакансии - KM Jobs Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .detail-section {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: var(--secondary-color);
+            width: 150px;
+            display: inline-block;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/pages/vacancies.html" class="back-link">← Назад к списку вакансий</a>
+
+        <div class="nav-links">
+            <a href="/" class="nav-btn">🏠 Дашборд</a>
+            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
+            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
+            <a href="/pages/clustering.html" class="nav-btn">📊 Кластеризация</a>
+        </div>
+
+        <div id="vacancyContent">
+            <p>Загрузка данных...</p>
+        </div>
+
+        <footer>
+            <p>🎓 KM Jobs Analyzer - Детальная информация о вакансии</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        async function loadVacancyDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const vacancyId = urlParams.get('id');
+
+            if (!vacancyId) {
+                document.getElementById('vacancyContent').innerHTML = '<p>❌ ID вакансии не указан</p>';
+                return;
+            }
+
+            const vacancy = await App.fetchAPI(`/vacancies/${vacancyId}`);
+
+            if (!vacancy) {
+                document.getElementById('vacancyContent').innerHTML = '<p>❌ Вакансия не найдена</p>';
+                return;
+            }
+
+            // Получаем KM-анализ
+            const kmAnalysis = await App.fetchAPI(`/km-analysis/vacancy/${vacancyId}`);
+
+            const html = `
+                <h1>${vacancy.name || 'Без названия'}</h1>
+
+                <div class="detail-section">
+                    <h3>📋 Основная информация</h3>
+                    <p><span class="detail-label">🏢 Компания:</span> <span class="detail-value">${vacancy.employer?.name || 'Не указана'}</span></p>
+                    <p><span class="detail-label">📍 Регион:</span> <span class="detail-value">${vacancy.area?.name || 'Не указан'}</span></p>
+                    <p><span class="detail-label">💰 Зарплата:</span> <span class="detail-value">${App.formatSalary(vacancy.salary)}</span></p>
+                    <p><span class="detail-label">📅 Опубликована:</span> <span class="detail-value">${App.formatDate(vacancy.published_at)}</span></p>
+                    <p><span class="detail-label">🔗 Ссылка:</span> <span class="detail-value"><a href="${vacancy.alternate_url}" target="_blank">${vacancy.alternate_url || '—'}</a></span></p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>🔬 Анализ функций управления знаниями</h3>
+                    ${kmAnalysis && kmAnalysis.analysis ? `
+                        <p><span class="detail-label">🎯 KM Score:</span> <span class="detail-value">${Math.round(kmAnalysis.analysis.score * 100)}%</span></p>
+                        <p><span class="detail-label">🔧 Найденные функции:</span> <span class="detail-value">${kmAnalysis.analysis.functions?.join(', ') || 'Не найдены'}</span></p>
+                        <p><span class="detail-label">📊 Топ термины:</span> <span class="detail-value">${kmAnalysis.analysis.top_terms?.slice(0, 5).map(t => `${t.word}(${t.count})`).join(', ') || '—'}</span></p>
+                    ` : '<p>Анализ недоступен</p>'}
+                </div>
+
+                <div class="detail-section">
+                    <h3>📝 Требования к кандидату</h3>
+                    <p>${vacancy.snippet?.requirement || 'Не указаны'}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>💼 Обязанности</h3>
+                    <p>${vacancy.snippet?.responsibility || 'Не указаны'}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>🔧 Ключевые навыки</h3>
+                    <p>${vacancy.key_skills?.map(s => s.name).join(', ') || 'Не указаны'}</p>
+                </div>
+            `;
+
+            document.getElementById('vacancyContent').innerHTML = html;
+        }
+
+        loadVacancyDetail();
+    </script>
+</body>
+</html>

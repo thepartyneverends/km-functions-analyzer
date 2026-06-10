@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вакансии - KM Jobs Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .vacancy-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .vacancy-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(5px);
+        }
+        .vacancy-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        .pagination button {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        .search-box {
+            margin: 20px 0;
+        }
+        .search-box input {
+            width: 300px;
+            padding: 10px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Список вакансий</h1>
+
+        <div class="nav-links">
+            <a href="/" class="nav-btn">🏠 Главная</a>
+            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
+            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
+            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Поиск по названию..." onkeyup="searchVacancies()">
+        </div>
+
+        <div id="vacancies-container"></div>
+
+        <div class="pagination" id="pagination"></div>
+
+        <footer>
+            <p>🎓 KM Jobs Analyzer - Анализ рынка труда</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        let currentPage = 0;
+        const limit = 10;
+        let allVacancies = [];
+
+        async function loadVacancies(page = 0) {
+            currentPage = page;
+            const offset = page * limit;
+            const data = await App.fetchAPI(`/vacancies?limit=${limit}&offset=${offset}`);
+
+            if (data && data.vacancies) {
+                allVacancies = data.vacancies;
+                displayVacancies(allVacancies);
+                displayPagination(data.total, page);
+            }
+        }
+
+        function displayVacancies(vacancies) {
+            const container = document.getElementById('vacancies-container');
+            if (vacancies.length === 0) {
+                container.innerHTML = '<p>Вакансии не найдены</p>';
+                return;
+            }
+
+            container.innerHTML = vacancies.map(v => `
+                <div class="vacancy-card" onclick="location.href='/pages/vacancy-detail.html?id=${v.id}'">
+                    <div class="vacancy-title">${v.name || 'Без названия'}</div>
+                    <div>🏢 ${v.employer?.name || 'Не указана'}</div>
+                    <div>💰 ${App.formatSalary(v.salary)}</div>
+                    <div>📍 ${v.area?.name || 'Не указан'}</div>
+                </div>
+            `).join('');
+        }
+
+        function displayPagination(total, currentPage) {
+            const totalPages = Math.ceil(total / limit);
+            const pagination = document.getElementById('pagination');
+
+            let html = '';
+            for (let i = 0; i < totalPages; i++) {
+                html += `<button onclick="loadVacancies(${i})" ${i === currentPage ? 'disabled' : ''}>${i + 1}</button>`;
+            }
+            pagination.innerHTML = html;
+        }
+
+        async function searchVacancies() {
+            const keyword = document.getElementById('searchInput').value;
+            if (keyword.length < 2) {
+                loadVacancies(0);
+                return;
+            }
+
+            const results = await App.fetchAPI(`/search/${encodeURIComponent(keyword)}`);
+            if (results && results.vacancies) {
+                displayVacancies(results.vacancies);
+                document.getElementById('pagination').innerHTML = '';
+            }
+        }
+
+        loadVacancies(0);
+    </script>
+</body>
+</html>
