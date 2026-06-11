@@ -1,6 +1,3 @@
-"""
-Загрузка данных из JSON-файла.
-"""
 import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -27,7 +24,7 @@ class DataLoader:
             return self._cache
 
         if not self.file_path.exists():
-            print(f"❌ Файл {self.file_path} не найден!")
+            print(f"Файл {self.file_path} не найден")
             return []
 
         try:
@@ -35,15 +32,15 @@ class DataLoader:
                 full_response = json.load(f)
 
             vacancies = full_response.get('items', [])
-            print(f"✅ Загружено {len(vacancies)} вакансий из {self.file_path}")
+            print(f"Загружено {len(vacancies)} вакансий из {self.file_path}")
             self._cache = vacancies
             return vacancies
 
         except json.JSONDecodeError as e:
-            print(f"❌ Ошибка парсинга JSON: {e}")
+            print(f"Ошибка парсинга JSON: {e}")
             return []
         except Exception as e:
-            print(f"❌ Непредвиденная ошибка: {e}")
+            print(f"Непредвиденная ошибка: {e}")
             return []
 
     def clear_cache(self):
@@ -59,12 +56,12 @@ data_loader = DataLoader()
 @lru_cache(maxsize=1)
 def get_vacancies() -> List[Dict[str, Any]]:
     """
-    Возвращает список всех вакансий (с кешированием).
+    Возвращает список всех вакансий
     """
     return data_loader.load()
 
 
 def refresh_vacancies_cache():
-    """Обновляет кеш вакансий."""
+    """Обновляет кэш вакансий."""
     data_loader.clear_cache()
     get_vacancies.cache_clear()

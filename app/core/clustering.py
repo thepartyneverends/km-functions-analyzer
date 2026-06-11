@@ -1,8 +1,3 @@
-"""
-Модуль для кластеризации вакансий на основе текстового анализа.
-Группирует похожие должности по функциям управления знаниями.
-"""
-import pandas as pd
 import numpy as np
 from typing import List, Dict, Any, Tuple
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -57,7 +52,7 @@ class VacancyClusterer:
             if not raw_text or len(raw_text) < 50:
                 continue
 
-            # ★★★ НОВОЕ: проверяем KM Score ★★★
+            # проверка KM Score
             from app.core.text_analyzer import analyze_vacancy_text
             analysis = analyze_vacancy_text(requirement, responsibility)
 
@@ -79,7 +74,7 @@ class VacancyClusterer:
                     'km_score': analysis['score']
                 })
 
-        print(f"✅ Отобрано {len(texts)} вакансий с KM Score >= {min_km_score}")
+        print(f"Отобрано {len(texts)} вакансий с KM Score >= {min_km_score}")
         return texts, metadata
 
     def vectorize(self, texts: List[str]) -> np.ndarray:
@@ -105,7 +100,7 @@ class VacancyClusterer:
 
     def find_optimal_clusters(self, X: np.ndarray, max_clusters: int = 10) -> Dict[str, Any]:
         """
-        Поиск оптимального количества кластеров методом "локтя" и силуэта.
+        Поиск оптимального количества кластеров методом локтя.
 
         Args:
             X: матрица признаков
