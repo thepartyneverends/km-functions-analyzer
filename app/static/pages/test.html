@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>KM Analyzer - Тест</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔬 KM Jobs Analyzer</h1>
+    <p>Тестовая страница для проверки работы приложения</p>
+
+    <div class="card">
+        <h3>📊 Статистика KM</h3>
+        <button onclick="loadStats()">Загрузить статистику</button>
+        <pre id="statsResult">—</pre>
+    </div>
+
+    <div class="card">
+        <h3>🔍 Проверить вакансию по ID</h3>
+        <input type="text" id="vacancyId" placeholder="Введите ID" value="30713109">
+        <button onclick="analyzeVacancy()">Анализировать</button>
+        <pre id="analysisResult">—</pre>
+    </div>
+
+    <script>
+        async function fetchAPI(endpoint) {
+            try {
+                const response = await fetch(`/api/v1${endpoint}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        async function loadStats() {
+            const result = await fetchAPI('/km-analysis/statistics');
+            document.getElementById('statsResult').innerHTML = JSON.stringify(result, null, 2);
+        }
+
+        async function analyzeVacancy() {
+            const id = document.getElementById('vacancyId').value.trim();
+            const result = await fetchAPI(`/km-analysis/vacancy/${id}`);
+            document.getElementById('analysisResult').innerHTML = JSON.stringify(result, null, 2);
+        }
+
+        // Автоматически загружаем статистику при открытии страницы
+        loadStats();
+    </script>
+</body>
+</html>
