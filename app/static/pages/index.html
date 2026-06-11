@@ -3,203 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KM Jobs Analyzer - Дашборд</title>
+    <title>Анализ функций менеджера знаний</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.plot.ly/plotly-2.27.1.min.js" charset="utf-8"></script>
     <style>
-        /* Стили для дашборда */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 35px 45px;
+        }
+
+        /* Заголовки */
+        h1 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            border-left: 5px solid #3498db;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            padding-left: 25px;
+        }
+
+        /* Сетка карточек */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
         }
+
         .dashboard-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.2s;
+            border-radius: 16px;
+            padding: 25px 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 1px solid #e9ecef;
         }
+
         .dashboard-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
         }
+
         .card-title {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: var(--secondary-color);
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-color);
         }
+
         .metric-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #3498db;
+            line-height: 1.2;
         }
+
         .metric-label {
-            color: var(--text-muted);
-            font-size: 0.85em;
+            font-size: 0.8rem;
+            color: #adb5bd;
+            margin-top: 8px;
         }
-        .quick-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background: var(--light-bg);
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--secondary-color);
-            margin: 5px;
-            transition: all 0.2s;
+
+        /* Графики */
+        .dashboard-card-large {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin: 25px 0;
         }
-        .quick-link:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateX(3px);
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
         }
-        .function-badge {
-            display: inline-block;
-            background: #e8f4f8;
-            color: var(--primary-color);
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin: 5px;
-            font-size: 0.8em;
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 25px 0;
         }
-        .nav-links {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin: 20px 0;
+
+        /* Футер */
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            border-top: 1px solid #e9ecef;
+            padding-top: 25px;
         }
-        .nav-btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        .nav-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            text-decoration: none;
-        }
-        .export-btn {
-            background: #27ae60;
-        }
-        .export-btn:hover {
-            background: #219a52;
-        }
-        .refresh-btn {
-            background: #3498db;
-        }
-        .last-updated {
-            text-align: right;
-            font-size: 0.8em;
-            color: var(--text-muted);
-            margin-top: 20px;
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            .navbar-container {
+                gap: 1rem;
+            }
+            .nav-item {
+                font-size: 0.9rem;
+                padding: 0.4rem 1rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 KM Jobs Analyzer</h1>
-        <p>Система анализа вакансий с функциями управления знаниями</p>
 
-        <div class="nav-links">
-            <a href="/" class="nav-btn">🏠 Дашборд</a>
-            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
-            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
-            <a href="/pages/text-analysis.html" class="nav-btn">📝 Анализ текста</a>
-            <a href="/pages/clustering.html" class="nav-btn">📊 Кластеризация</a>
-            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
-            <button onclick="exportData()" class="nav-btn export-btn" style="border: none; cursor: pointer;">📥 Экспорт данных</button>
-            <button onclick="refreshAll()" class="nav-btn refresh-btn" style="border: none; cursor: pointer;">🔄 Обновить</button>
+    <div class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-item active">ГЛАВНАЯ</a>
+            <a href="/pages/vacancies.html" class="nav-item">ВАКАНСИИ</a>
+            <a href="/pages/km-analysis.html" class="nav-item">KM-АНАЛИЗ</a>
+            <a href="/pages/text-analysis.html" class="nav-item">ТЕКСТ</a>
+            <a href="/pages/clustering.html" class="nav-item">КЛАСТЕРЫ</a>
+            <a href="/pages/statistics.html" class="nav-item">СТАТИСТИКА</a>
         </div>
+    </div>
 
-        <!-- Метрики -->
+    <div class="container">
+        <h1>📊 Анализ вакансий с функциями управления знаниями</h1>
+
+        <!-- Метрики (4 карточки) -->
         <div class="dashboard-grid" id="metricsGrid">
             <div class="dashboard-card">
-                <div class="card-title">📋 Всего вакансий</div>
+                <div class="card-title">📋 ВСЕГО ВАКАНСИЙ</div>
                 <div class="metric-value" id="totalVacancies">—</div>
                 <div class="metric-label">в выборке</div>
             </div>
             <div class="dashboard-card">
-                <div class="card-title">🎯 С функциями KM</div>
+                <div class="card-title">🎯 С ФУНКЦИЯМИ KM</div>
                 <div class="metric-value" id="kmVacancies">—</div>
                 <div class="metric-label"><span id="kmPercentage">0</span>% от всех</div>
             </div>
             <div class="dashboard-card">
-                <div class="card-title">🏢 Компаний</div>
+                <div class="card-title">🏢 КОМПАНИЙ</div>
                 <div class="metric-value" id="uniqueCompanies">—</div>
                 <div class="metric-label">работодателей</div>
             </div>
             <div class="dashboard-card">
-                <div class="card-title">💰 Средняя зарплата</div>
+                <div class="card-title">💰 СРЕДНЯЯ ЗАРПЛАТА</div>
                 <div class="metric-value" id="avgSalary">—</div>
                 <div class="metric-label">рублей (верхняя граница)</div>
             </div>
         </div>
 
-        <!-- Два столбца для графиков -->
-        <div class="dashboard-grid">
-            <div class="dashboard-card">
-                <div class="card-title">📊 Распределение функций KM</div>
-                <div id="kmFunctionsChart" style="height: 300px;"></div>
+        <!-- Две колонки: распределение функций KM и кластеры -->
+        <div class="two-columns">
+            <div class="dashboard-card-large">
+                <div class="chart-title">📊 РАСПРЕДЕЛЕНИЕ ФУНКЦИЙ KM</div>
+                <div id="kmFunctionsChart" style="height: 320px;"></div>
             </div>
-            <div class="dashboard-card">
-                <div class="card-title">🏆 Топ-10 ключевых навыков</div>
-                <div id="topSkillsChart" style="height: 300px;"></div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="dashboard-card">
-                <div class="card-title">📈 Распределение вакансий по кластерам</div>
-                <div id="clusterChart" style="height: 300px;"></div>
-            </div>
-            <div class="dashboard-card">
-                <div class="card-title">🔍 Быстрый поиск вакансий</div>
-                <input type="text" id="quickSearch" placeholder="Введите ключевое слово..." style="width: 100%; padding: 10px; margin-bottom: 15px;">
-                <div id="quickSearchResults" style="max-height: 220px; overflow-y: auto;"></div>
+            <div class="dashboard-card-large">
+                <div class="chart-title">📈 РАСПРЕДЕЛЕНИЕ ПО КЛАСТЕРАМ</div>
+                <div id="clusterChart" style="height: 320px;"></div>
             </div>
         </div>
 
-        <!-- Последние вакансии -->
-        <div class="dashboard-card">
-            <div class="card-title">📋 Последние добавленные вакансии</div>
-            <div id="recentVacancies"></div>
-        </div>
-
-        <!-- Быстрые ссылки -->
-        <div class="dashboard-card">
-            <div class="card-title">🚀 Быстрая навигация по функциям KM</div>
-            <div id="quickLinks"></div>
-        </div>
-
-        <div class="last-updated" id="lastUpdated">
+        <div class="last-updated" id="lastUpdated" style="text-align: right; font-size: 0.75rem; color: #adb5bd; margin-top: 20px;">
             Данные загружены: <span>—</span>
         </div>
 
         <footer>
             <p>🎓 Дипломная работа: "Применение компьютерных методов к анализу рынка труда"</p>
-            <p>🔬 Анализ вакансий с функциями управления знаниями (Knowledge Management)</p>
+            <p>🔬 Устименко Сергей Денисович ПИвУКИС-22</p>
         </footer>
     </div>
 
     <script src="/static/js/main.js"></script>
     <script>
-        // Состояние дашборда
         let dashboardData = {
             vacancies: [],
             kmStats: null,
-            clusterData: null,
-            skills: null
+            clusterData: null
         };
 
-        // Загрузка всех данных
         async function loadDashboard() {
             try {
                 // 1. Общая статистика
@@ -213,14 +270,11 @@
                 const kmStats = await App.fetchAPI('/km-analysis/statistics');
                 if (kmStats) {
                     dashboardData.kmStats = kmStats;
-                    const withKm = kmStats.vacancies_with_km || 0;        // 77
-                    const total = kmStats.total_vacancies || 1;           // 487
-                    const kmPercentage = Math.round((withKm / total) * 100);  // 16%
-
-                    document.getElementById('kmVacancies').innerHTML = `${withKm}<small style="font-size: 0.7em;"> из ${total}</small>`;
+                    const withKm = kmStats.vacancies_with_km || 0;
+                    const total = kmStats.total_vacancies || 1;
+                    const kmPercentage = Math.round((withKm / total) * 100);
+                    document.getElementById('kmVacancies').innerHTML = `${withKm}<small style="font-size: 0.7rem;"> из ${total}</small>`;
                     document.getElementById('kmPercentage').textContent = kmPercentage;
-
-                    // График распределения функций KM
                     drawKmFunctionsChart(kmStats.function_distribution || {});
                 }
 
@@ -230,79 +284,38 @@
                     document.getElementById('avgSalary').textContent = salaryStats.salary_to_avg.toLocaleString();
                 }
 
-                // 4. Топ навыков
-                const skills = await App.fetchAPI('/skills/top?limit=10');
-                if (skills) {
-                    dashboardData.skills = skills;
-                    drawTopSkillsChart(skills.top_skills || []);
-                }
-
-                // 5. Кластеризация
+                // 4. Кластеризация
                 await loadClusterData();
-
-                // 6. Последние вакансии
-                await loadRecentVacancies();
-
-                // 7. Быстрые ссылки по функциям KM
-                loadQuickLinks();
 
                 // Обновляем время
                 document.querySelector('#lastUpdated span').textContent = new Date().toLocaleTimeString();
-
             } catch (error) {
                 console.error('Ошибка загрузки дашборда:', error);
             }
         }
 
-        // График функций KM
         function drawKmFunctionsChart(distribution) {
             const functions = Object.keys(distribution);
             const counts = Object.values(distribution);
-
             const trace = {
                 x: functions,
                 y: counts,
                 type: 'bar',
-                marker: {
-                    color: '#3498db',
-                    line: { color: '#2980b9', width: 1 }
-                },
+                marker: { color: '#3498db', line: { color: '#2980b9', width: 1 } },
                 text: counts,
                 textposition: 'auto'
             };
-
             const layout = {
                 margin: { t: 10, l: 40, r: 10, b: 80 },
-                xaxis: { tickangle: -25, tickfont: { size: 10 } }
+                xaxis: { tickangle: -25, tickfont: { size: 10 } },
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'white'
             };
-
             Plotly.newPlot('kmFunctionsChart', [trace], layout, { responsive: true });
         }
 
-        // График топ навыков
-        function drawTopSkillsChart(skills) {
-            const skillNames = skills.map(s => s.skill.length > 20 ? s.skill.slice(0, 18) + '..' : s.skill);
-            const skillCounts = skills.map(s => s.count);
-
-            const trace = {
-                x: skillCounts,
-                y: skillNames,
-                type: 'bar',
-                orientation: 'h',
-                marker: { color: '#e74c3c' }
-            };
-
-            const layout = {
-                margin: { t: 10, l: 120, r: 10, b: 10 }
-            };
-
-            Plotly.newPlot('topSkillsChart', [trace], layout, { responsive: true });
-        }
-
-        // Загрузка данных кластеризации
         async function loadClusterData() {
             try {
-                // Пытаемся получить данные кластеризации
                 const response = await fetch('/api/v1/clustering/vacancies');
                 if (response.ok) {
                     const data = await response.json();
@@ -313,118 +326,36 @@
                 }
             } catch (error) {
                 console.log('Кластеризация не запущена или нет данных');
-                document.getElementById('clusterChart').innerHTML = '<p style="color: #999; text-align: center;">Запустите кластеризацию на странице "Кластеризация"</p>';
+                document.getElementById('clusterChart').innerHTML = '<p style="color: #999; text-align: center; padding: 50px;">Запустите кластеризацию на странице "КЛАСТЕРЫ"</p>';
             }
         }
 
-        // График кластеров
         function drawClusterChart(vacancies) {
             const clusterCounts = {};
             vacancies.forEach(v => {
                 const cluster = v.cluster;
                 clusterCounts[cluster] = (clusterCounts[cluster] || 0) + 1;
             });
-
             const clusters = Object.keys(clusterCounts).map(k => `Кластер ${k}`);
             const counts = Object.values(clusterCounts);
-
             const trace = {
                 x: clusters,
                 y: counts,
                 type: 'pie',
                 labels: clusters,
                 values: counts,
-                marker: { colors: ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'] }
+                marker: { colors: ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'] },
+                hole: 0.3
             };
-
             const layout = {
                 margin: { t: 10, l: 10, r: 10, b: 10 },
-                showlegend: true
+                showlegend: true,
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'white'
             };
-
             Plotly.newPlot('clusterChart', [trace], layout, { responsive: true });
         }
 
-        // Загрузка последних вакансий
-        async function loadRecentVacancies() {
-            const data = await App.fetchAPI('/vacancies?limit=5&offset=0');
-            if (data && data.vacancies) {
-                const html = data.vacancies.map(v => `
-                    <div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-                        <strong>${v.name || 'Без названия'}</strong><br>
-                        🏢 ${v.employer?.name || 'Не указана'} |
-                        💰 ${App.formatSalary(v.salary)}
-                    </div>
-                `).join('');
-                document.getElementById('recentVacancies').innerHTML = html || '<p>Нет данных</p>';
-            }
-        }
-
-        // Быстрый поиск
-        document.getElementById('quickSearch').addEventListener('input', async (e) => {
-            const keyword = e.target.value;
-            const resultsDiv = document.getElementById('quickSearchResults');
-
-            if (keyword.length < 2) {
-                resultsDiv.innerHTML = '<p style="color: #999;">Введите минимум 2 символа для поиска</p>';
-                return;
-            }
-
-            const results = await App.fetchAPI(`/search/${encodeURIComponent(keyword)}`);
-            if (results && results.vacancies) {
-                if (results.vacancies.length === 0) {
-                    resultsDiv.innerHTML = '<p>Ничего не найдено</p>';
-                } else {
-                    resultsDiv.innerHTML = results.vacancies.slice(0, 5).map(v => `
-                        <div style="padding: 8px; border-bottom: 1px solid #eee;">
-                            <a href="/pages/vacancy-detail.html?id=${v.id}" style="text-decoration: none;">
-                                <strong>${v.name}</strong><br>
-                                <small>${v.company || '—'}</small>
-                            </a>
-                        </div>
-                    `).join('');
-                }
-            }
-        });
-
-        // Быстрые ссылки по функциям KM
-        function loadQuickLinks() {
-            const functions = [
-                'База знаний', 'Документация', 'Обучение', 'Процессы', 'Коммуникации'
-            ];
-            const html = functions.map(f => `
-                <a href="/pages/km-analysis.html" class="quick-link">${f}</a>
-            `).join('');
-            document.getElementById('quickLinks').innerHTML = html;
-        }
-
-        // Экспорт данных
-        async function exportData() {
-            try {
-                const data = await App.fetchAPI('/vacancies?limit=100&offset=0');
-                if (data && data.vacancies) {
-                    const jsonStr = JSON.stringify(data.vacancies, null, 2);
-                    const blob = new Blob([jsonStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `km_vacancies_export_${new Date().toISOString().slice(0,19)}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    App.showToast('✅ Данные экспортированы успешно', 'success');
-                }
-            } catch (error) {
-                App.showToast('❌ Ошибка при экспорте', 'error');
-            }
-        }
-
-        // Обновление всех данных
-        function refreshAll() {
-            App.showToast('🔄 Обновление данных...', 'info');
-            loadDashboard();
-        }
-
-        // Загрузка при старте
         document.addEventListener('DOMContentLoaded', () => {
             loadDashboard();
         });

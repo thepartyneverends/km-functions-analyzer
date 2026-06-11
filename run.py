@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 """
-Скрипт для запуска FastAPI приложения.
+Скрипт для запуска FastAPI приложения
 """
 import uvicorn
 from app.config import HOST, PORT, RELOAD

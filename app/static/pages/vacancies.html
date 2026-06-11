@@ -6,77 +6,245 @@
     <title>Вакансии - KM Jobs Analyzer</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 35px 45px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            border-left: 5px solid #3498db;
+            padding-left: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Карточки вакансий */
+        .vacancies-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 30px 0;
+        }
+
         .vacancy-card {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-            transition: all 0.3s;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px 25px;
+            transition: all 0.3s ease;
             cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
+
         .vacancy-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateX(5px);
+            transform: translateX(8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-color: #3498db;
         }
+
+        .vacancy-info {
+            flex: 2;
+        }
+
         .vacancy-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
         }
+
+        .vacancy-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .vacancy-details span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vacancy-salary {
+            background: #e8f4f8;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #3498db;
+            white-space: nowrap;
+        }
+
+        /* Пагинация */
         .pagination {
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin: 30px 0;
-        }
-        .pagination button {
-            padding: 10px 15px;
-            cursor: pointer;
-        }
-        .search-box {
-            margin: 20px 0;
-        }
-        .search-box input {
-            width: 300px;
-            padding: 10px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 15px;
+            margin: 40px 0 20px;
             flex-wrap: wrap;
-            margin: 20px 0;
         }
-        .nav-btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: var(--primary-color);
-            color: white;
+
+        .pagination button {
+            background: white;
+            border: 1px solid #dee2e6;
+            padding: 10px 18px;
             border-radius: 8px;
-            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #1a1a2e;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .pagination button:disabled {
+            background: #e9ecef;
+            cursor: not-allowed;
+            color: #adb5bd;
+        }
+
+        /* Загрузка */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            border-top: 1px solid #e9ecef;
+            padding-top: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            .navbar-container {
+                gap: 1rem;
+            }
+            .nav-item {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .vacancy-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .vacancy-salary {
+                align-self: flex-start;
+            }
+            .vacancy-details {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
     </style>
 </head>
 <body>
+
+    <!-- НАВИГАЦИОННАЯ ПАНЕЛЬ (как на главной) -->
+    <div class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-item">ГЛАВНАЯ</a>
+            <a href="/pages/vacancies.html" class="nav-item active">ВАКАНСИИ</a>
+            <a href="/pages/km-analysis.html" class="nav-item">KM-АНАЛИЗ</a>
+            <a href="/pages/text-analysis.html" class="nav-item">ТЕКСТ</a>
+            <a href="/pages/clustering.html" class="nav-item">КЛАСТЕРЫ</a>
+            <a href="/pages/statistics.html" class="nav-item">СТАТИСТИКА</a>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>📋 Список вакансий</h1>
+        <h1>📋 СПИСОК ВАКАНСИЙ</h1>
 
-        <div class="nav-links">
-            <a href="/" class="nav-btn">🏠 Главная</a>
-            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
-            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
-            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
+        <!-- Список вакансий -->
+        <div id="vacancies-container" class="vacancies-grid">
+            <div class="loading">Загрузка вакансий...</div>
         </div>
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Поиск по названию..." onkeyup="searchVacancies()">
-        </div>
-
-        <div id="vacancies-container"></div>
-
+        <!-- Пагинация -->
         <div class="pagination" id="pagination"></div>
 
         <footer>
-            <p>🎓 KM Jobs Analyzer - Анализ рынка труда</p>
+            <p>🎓 Дипломная работа: "Применение компьютерных методов к анализу рынка труда"</p>
+            <p>🔬 Устименко Сергей Денисович ПИвУКИС-22</p>
         </footer>
     </div>
 
@@ -84,62 +252,109 @@
     <script>
         let currentPage = 0;
         const limit = 10;
-        let allVacancies = [];
 
+        // Форматирование зарплаты
+        function formatSalary(salary) {
+            if (!salary) return 'Не указана';
+            const from = salary.from ? `от ${salary.from.toLocaleString()}` : '';
+            const to = salary.to ? `до ${salary.to.toLocaleString()}` : '';
+            const currency = salary.currency || 'RUB';
+            if (from && to) return `${from} ${to} ${currency}`;
+            if (from) return `${from} ${currency}`;
+            if (to) return `${to} ${currency}`;
+            return 'Не указана';
+        }
+
+        // Загрузка вакансий
         async function loadVacancies(page = 0) {
             currentPage = page;
             const offset = page * limit;
-            const data = await App.fetchAPI(`/vacancies?limit=${limit}&offset=${offset}`);
+            const container = document.getElementById('vacancies-container');
+            container.innerHTML = '<div class="loading">Загрузка вакансий...</div>';
 
-            if (data && data.vacancies) {
-                allVacancies = data.vacancies;
-                displayVacancies(allVacancies);
-                displayPagination(data.total, page);
+            try {
+                const data = await App.fetchAPI(`/vacancies?limit=${limit}&offset=${offset}`);
+
+                if (data && data.vacancies && data.vacancies.length > 0) {
+                    displayVacancies(data.vacancies);
+                    displayPagination(data.total, page);
+                } else {
+                    container.innerHTML = '<div class="loading">😕 Вакансии не найдены</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                container.innerHTML = '<div class="loading">❌ Ошибка загрузки вакансий</div>';
             }
         }
 
+        // Отображение карточек
         function displayVacancies(vacancies) {
             const container = document.getElementById('vacancies-container');
-            if (vacancies.length === 0) {
-                container.innerHTML = '<p>Вакансии не найдены</p>';
-                return;
-            }
 
-            container.innerHTML = vacancies.map(v => `
-                <div class="vacancy-card" onclick="location.href='/pages/vacancy-detail.html?id=${v.id}'">
-                    <div class="vacancy-title">${v.name || 'Без названия'}</div>
-                    <div>🏢 ${v.employer?.name || 'Не указана'}</div>
-                    <div>💰 ${App.formatSalary(v.salary)}</div>
-                    <div>📍 ${v.area?.name || 'Не указан'}</div>
-                </div>
-            `).join('');
+            const html = vacancies.map(v => {
+                // Формируем ссылку на hh.ru (альтернативная ссылка или прямой URL)
+                let vacancyUrl = v.alternate_url || v.url || '#';
+
+                return `
+                    <div class="vacancy-card" onclick="window.open('${vacancyUrl}', '_blank')">
+                        <div class="vacancy-info">
+                            <div class="vacancy-title">${v.name || 'Без названия'}</div>
+                            <div class="vacancy-details">
+                                <span>🏢 ${v.employer?.name || 'Не указана'}</span>
+                                <span>📍 ${v.area?.name || 'Не указан'}</span>
+                            </div>
+                        </div>
+                        <div class="vacancy-salary">💰 ${formatSalary(v.salary)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
         }
 
+        // Пагинация
         function displayPagination(total, currentPage) {
             const totalPages = Math.ceil(total / limit);
-            const pagination = document.getElementById('pagination');
+            const paginationDiv = document.getElementById('pagination');
 
-            let html = '';
-            for (let i = 0; i < totalPages; i++) {
-                html += `<button onclick="loadVacancies(${i})" ${i === currentPage ? 'disabled' : ''}>${i + 1}</button>`;
-            }
-            pagination.innerHTML = html;
-        }
-
-        async function searchVacancies() {
-            const keyword = document.getElementById('searchInput').value;
-            if (keyword.length < 2) {
-                loadVacancies(0);
+            if (totalPages <= 1) {
+                paginationDiv.innerHTML = '';
                 return;
             }
 
-            const results = await App.fetchAPI(`/search/${encodeURIComponent(keyword)}`);
-            if (results && results.vacancies) {
-                displayVacancies(results.vacancies);
-                document.getElementById('pagination').innerHTML = '';
+            let html = '';
+            // Предыдущая страница
+            if (currentPage > 0) {
+                html += `<button onclick="loadVacancies(${currentPage - 1})">← Назад</button>`;
             }
+
+            // Номера страниц (показываем только текущую и соседние)
+            const startPage = Math.max(0, currentPage - 2);
+            const endPage = Math.min(totalPages - 1, currentPage + 2);
+
+            if (startPage > 0) {
+                html += `<button onclick="loadVacancies(0)">1</button>`;
+                if (startPage > 1) html += `<span style="padding: 0 5px;">...</span>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button onclick="loadVacancies(${i})" ${i === currentPage ? 'disabled' : ''}>${i + 1}</button>`;
+            }
+
+            if (endPage < totalPages - 1) {
+                if (endPage < totalPages - 2) html += `<span style="padding: 0 5px;">...</span>`;
+                html += `<button onclick="loadVacancies(${totalPages - 1})">${totalPages}</button>`;
+            }
+
+            // Следующая страница
+            if (currentPage < totalPages - 1) {
+                html += `<button onclick="loadVacancies(${currentPage + 1})">Вперёд →</button>`;
+            }
+
+            paginationDiv.innerHTML = html;
         }
 
+        // Загрузка при старте
         loadVacancies(0);
     </script>
 </body>

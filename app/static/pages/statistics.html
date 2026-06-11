@@ -5,111 +5,373 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Статистика - KM Jobs Analyzer</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.1.min.js" charset="utf-8"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 35px 45px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            border-left: 5px solid #3498db;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            padding-left: 25px;
+        }
+
+        /* Статистические карточки */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
         }
+
         .stats-card {
-            background: var(--light-bg);
-            border-radius: 12px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 0;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e9ecef;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            padding: 15px 20px;
+            color: white;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .card-body {
             padding: 20px;
         }
-        .stats-card h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-        .company-item {
+
+        /* Список компаний и навыков */
+        .list-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
         }
-        .nav-links {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin: 20px 0;
+
+        .list-item:last-child {
+            border-bottom: none;
         }
-        .nav-btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: var(--primary-color);
+
+        .list-item:hover {
+            background: #f1f3f5;
+            padding-left: 8px;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #1a1a2e;
+        }
+
+        .item-count {
+            background: #3498db;
             color: white;
-            border-radius: 8px;
-            text-decoration: none;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Зарплатная статистика */
+        .salary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .salary-label {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .salary-value {
+            color: #3498db;
+            font-weight: 700;
+        }
+
+        .sample-info {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 2px dashed #dee2e6;
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-align: center;
+        }
+
+        /* Пустые состояния */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #adb5bd;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            border-top: 1px solid #e9ecef;
+            padding-top: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            .navbar-container {
+                gap: 1rem;
+            }
+            .nav-item {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📈 Статистика и аналитика</h1>
 
-        <div class="nav-links">
-            <a href="/" class="nav-btn">🏠 Главная</a>
-            <a href="/pages/vacancies.html" class="nav-btn">📋 Вакансии</a>
-            <a href="/pages/km-analysis.html" class="nav-btn">🔬 KM-анализ</a>
-            <a href="/pages/statistics.html" class="nav-btn">📈 Статистика</a>
+    <!-- НАВИГАЦИОННАЯ ПАНЕЛЬ -->
+    <div class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="nav-item">ГЛАВНАЯ</a>
+            <a href="/pages/vacancies.html" class="nav-item">ВАКАНСИИ</a>
+            <a href="/pages/km-analysis.html" class="nav-item">KM-АНАЛИЗ</a>
+            <a href="/pages/text-analysis.html" class="nav-item">ТЕКСТ</a>
+            <a href="/pages/clustering.html" class="nav-item">КЛАСТЕРЫ</a>
+            <a href="/pages/statistics.html" class="nav-item active">СТАТИСТИКА</a>
         </div>
+    </div>
+
+    <div class="container">
+        <h1>📈 СТАТИСТИКА И АНАЛИТИКА</h1>
+        <div class="subtitle">Обобщённые данные по всем вакансиям в выборке</div>
 
         <div class="stats-grid">
+            <!-- Зарплатная статистика -->
             <div class="stats-card">
-                <h3>💰 Зарплатная статистика</h3>
-                <div id="salary-stats"></div>
+                <div class="card-header">
+                    <h3>💰 ЗАРПЛАТНАЯ СТАТИСТИКА</h3>
+                </div>
+                <div class="card-body" id="salary-stats">
+                    <div class="empty-state">Загрузка данных...</div>
+                </div>
             </div>
 
+            <!-- Топ компаний -->
             <div class="stats-card">
-                <h3>🏢 Топ компаний по вакансиям</h3>
-                <div id="companies-stats"></div>
+                <div class="card-header">
+                    <h3>🏢 ТОП-10 КОМПАНИЙ</h3>
+                </div>
+                <div class="card-body">
+                    <div id="companies-stats">
+                        <div class="empty-state">Загрузка данных...</div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Топ навыков -->
             <div class="stats-card">
-                <h3>🔧 Топ навыков</h3>
-                <div id="skills-stats"></div>
+                <div class="card-header">
+                    <h3>🔧 ТОП-10 НАВЫКОВ</h3>
+                </div>
+                <div class="card-body">
+                    <div id="skills-stats">
+                        <div class="empty-state">Загрузка данных...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <footer>
-            <p>🎓 KM Jobs Analyzer - Анализ рынка труда</p>
+            <p>🎓 Дипломная работа: "Применение компьютерных методов к анализу рынка труда"</p>
+            <p>🔬 Устименко Сергей Денисович ПИвУКИС-22</p>
         </footer>
     </div>
 
     <script src="/static/js/main.js"></script>
     <script>
         async function loadSalaryStats() {
-            const data = await App.fetchAPI('/stats/salary');
-            if (data) {
-                document.getElementById('salary-stats').innerHTML = `
-                    <p><strong>💰 Зарплата "от":</strong> ${data.salary_from_min?.toLocaleString() || '—'} - ${data.salary_from_max?.toLocaleString() || '—'} (ср. ${data.salary_from_avg?.toLocaleString() || '—'})</p>
-                    <p><strong>💰 Зарплата "до":</strong> ${data.salary_to_min?.toLocaleString() || '—'} - ${data.salary_to_max?.toLocaleString() || '—'} (ср. ${data.salary_to_avg?.toLocaleString() || '—'})</p>
-                    <p><strong>📊 Выборка по зарплатам:</strong> ${data.sample_size || 0} вакансий</p>
-                `;
+            const container = document.getElementById('salary-stats');
+            try {
+                const data = await App.fetchAPI('/stats/salary');
+                if (data) {
+                    const fromMin = data.salary_from_min?.toLocaleString() || '—';
+                    const fromMax = data.salary_from_max?.toLocaleString() || '—';
+                    const fromAvg = data.salary_from_avg?.toLocaleString() || '—';
+                    const toMin = data.salary_to_min?.toLocaleString() || '—';
+                    const toMax = data.salary_to_max?.toLocaleString() || '—';
+                    const toAvg = data.salary_to_avg?.toLocaleString() || '—';
+
+                    container.innerHTML = `
+                        <div class="salary-row">
+                            <span class="salary-label">📊 Зарплата "от" (мин)</span>
+                            <span class="salary-value">${fromMin} ₽</span>
+                        </div>
+                        <div class="salary-row">
+                            <span class="salary-label">📊 Зарплата "от" (макс)</span>
+                            <span class="salary-value">${fromMax} ₽</span>
+                        </div>
+                        <div class="salary-row">
+                            <span class="salary-label">📊 Зарплата "от" (средняя)</span>
+                            <span class="salary-value">${fromAvg} ₽</span>
+                        </div>
+                        <div class="salary-row">
+                            <span class="salary-label">🎯 Зарплата "до" (мин)</span>
+                            <span class="salary-value">${toMin} ₽</span>
+                        </div>
+                        <div class="salary-row">
+                            <span class="salary-label">🎯 Зарплата "до" (макс)</span>
+                            <span class="salary-value">${toMax} ₽</span>
+                        </div>
+                        <div class="salary-row">
+                            <span class="salary-label">🎯 Зарплата "до" (средняя)</span>
+                            <span class="salary-value">${toAvg} ₽</span>
+                        </div>
+                        <div class="sample-info">
+                            📊 Выборка: ${data.sample_size || 0} вакансий с указанием зарплаты
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="empty-state">❌ Нет данных по зарплатам</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки зарплатной статистики:', error);
+                container.innerHTML = '<div class="empty-state">❌ Ошибка загрузки данных</div>';
             }
         }
 
         async function loadCompaniesStats() {
-            const data = await App.fetchAPI('/stats/companies');
-            if (data && data.companies) {
-                document.getElementById('companies-stats').innerHTML = data.companies.slice(0, 10).map(c => `
-                    <div class="company-item">
-                        <span>${c.name}</span>
-                        <span class="function-count">${c.vacancies_count} вакансий</span>
-                    </div>
-                `).join('');
+            const container = document.getElementById('companies-stats');
+            try {
+                const data = await App.fetchAPI('/stats/companies');
+                if (data && data.companies && data.companies.length > 0) {
+                    const companiesHtml = data.companies.slice(0, 10).map((c, idx) => `
+                        <div class="list-item">
+                            <span class="item-name">${idx + 1}. ${c.name}</span>
+                            <span class="item-count">${c.vacancies_count} ваканс.</span>
+                        </div>
+                    `).join('');
+                    container.innerHTML = companiesHtml;
+                } else {
+                    container.innerHTML = '<div class="empty-state">📭 Нет данных о компаниях</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки компаний:', error);
+                container.innerHTML = '<div class="empty-state">❌ Ошибка загрузки данных</div>';
             }
         }
 
         async function loadSkillsStats() {
-            const data = await App.fetchAPI('/skills/top?limit=10');
-            if (data && data.top_skills) {
-                document.getElementById('skills-stats').innerHTML = data.top_skills.map(s => `
-                    <div class="company-item">
-                        <span>${s.skill}</span>
-                        <span class="function-count">${s.count} раз</span>
-                    </div>
-                `).join('');
+            const container = document.getElementById('skills-stats');
+            try {
+                const data = await App.fetchAPI('/skills/top?limit=10');
+                if (data && data.top_skills && data.top_skills.length > 0) {
+                    const skillsHtml = data.top_skills.map((s, idx) => `
+                        <div class="list-item">
+                            <span class="item-name">${idx + 1}. ${s.skill}</span>
+                            <span class="item-count">${s.count} раз</span>
+                        </div>
+                    `).join('');
+                    container.innerHTML = skillsHtml;
+                } else {
+                    container.innerHTML = '<div class="empty-state">📭 Нет данных о навыках</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки навыков:', error);
+                container.innerHTML = '<div class="empty-state">❌ Ошибка загрузки данных</div>';
             }
         }
 
