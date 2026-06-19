@@ -1,0 +1,8 @@
+[project]
+name = "km-jobs-analyzer"
+version = "1.0.0"
+
+[tool.fastapi]
+path = "main.py"
+module = "main"
+app = "app"
