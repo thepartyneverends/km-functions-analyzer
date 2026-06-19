@@ -19,7 +19,7 @@ app.include_router(text_analysis.router, prefix=API_V1_PREFIX)
 app.include_router(clustering.router, prefix=API_V1_PREFIX)
 
 # Статические файлы (CSS, JS, страницы)
-static_dir = Path(__file__).parent / "app" / "static"
+static_dir = Path(__file__).parent / "static"
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     app.mount("/pages", StaticFiles(directory=str(static_dir / "pages")), name="pages")
