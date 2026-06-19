@@ -1,12 +1,9 @@
-"""
-Расчет статистик по вакансиям.
-"""
+# Расчет статистик по вакансиям.
 from typing import List, Dict, Any
 from app.core.data_loader import get_vacancies
 
-
+# Расчет общей статистики по всем вакансиям
 def calculate_total_stats() -> Dict[str, Any]:
-    """Рассчитывает общую статистику по всем вакансиям."""
     vacancies = get_vacancies()
 
     if not vacancies:
@@ -65,9 +62,9 @@ def calculate_companies_stats() -> Dict[str, Any]:
         "companies": [{"name": name, "vacancies_count": count} for name, count in sorted_companies]
     }
 
-
+# Расчет топ навыков
 def calculate_top_skills(limit: int = 10) -> Dict[str, Any]:
-    """Рассчитывает топ наиболее часто встречающихся навыков."""
+
     vacancies = get_vacancies()
 
     if not vacancies:

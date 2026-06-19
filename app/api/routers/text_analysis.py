@@ -37,7 +37,7 @@ async def analyze_vacancy_text_endpoint(vacancy_id: str):
 
 @router.get("/batch")
 async def analyze_batch_vacancies(
-        limit: int = Query(10, ge=1, le=50, description="Количество вакансий для анализа")
+        limit: int = Query(10, ge=1, le=200, description="Количество вакансий для анализа")
 ):
     """
     Пакетный анализ нескольких вакансий.

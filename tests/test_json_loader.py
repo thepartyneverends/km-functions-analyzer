@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-def load_vacancies_from_json(file_path: str = "mock_hh_response.json"):
+def load_vacancies_from_json(file_path: str = "hh_km_vacancies.json"):
     """
     Загружает вакансии из JSON-файла.
 
@@ -28,7 +28,7 @@ def load_vacancies_from_json(file_path: str = "mock_hh_response.json"):
 
         # Извлекаем список вакансий (ключ 'items' в ответе API HH)
         vacancies = full_response.get('items', [])
-        print(f"✅ Успешно загружено {len(vacancies)} вакансий из файла {file_path}")
+        print(f"Успешно загружено {len(vacancies)} вакансий из файла {file_path}")
         return vacancies
 
     except json.JSONDecodeError as e:
@@ -131,14 +131,11 @@ def print_vacancies_as_table(vacancies):
     print("-" * 80)
 
 
-# ============================================
-# ГЛАВНЫЙ БЛОК ЗАПУСКА
-# ============================================
 if __name__ == "__main__":
     print("🚀 Запуск тестового загрузчика вакансий...")
 
     # Загружаем вакансии из JSON-файла
-    vacancies = load_vacancies_from_json("../data/mock_hh_response.json")
+    vacancies = load_vacancies_from_json("../data/hh_km_vacancies.json")
 
     if vacancies:
         # Вариант 1: Подробный вывод в консоль
@@ -160,4 +157,4 @@ if __name__ == "__main__":
             print(f"   {idx}. {vacancy.get('name', 'Без названия')}")
     else:
         print(
-            "❌ Не удалось загрузить данные. Проверьте, что файл mock_hh_response.json находится в той же папке, что и скрипт.")
+            "❌ Не удалось загрузить данные")

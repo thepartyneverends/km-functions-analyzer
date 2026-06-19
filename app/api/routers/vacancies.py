@@ -1,41 +1,32 @@
-"""
-Роутер для эндпоинтов /vacancies.
-"""
-from fastapi import APIRouter, HTTPException, Query
-from app.models.vacancy import Vacancy
-from app.models.response import VacanciesResponse
-from app.core.vacancy_processor import get_vacancies_paginated, get_vacancy_by_id
-from app.config import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from fastapi import APIRouter, Query
+from app.core.data_loader import get_vacancies
 
 router = APIRouter(prefix="/vacancies", tags=["Вакансии"])
 
-
-@router.get("/", response_model=VacanciesResponse)
-async def get_vacancies(
-        limit: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Количество вакансий"),
-        offset: int = Query(0, ge=0, description="Смещение (пагинация)")
+@router.get("/")
+async def get_vacancies_list(
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0)
 ):
-    """
-    Получить список вакансий с пагинацией.
-    """
-    vacancies_list, total = get_vacancies_paginated(limit, offset)
+    vacancies = get_vacancies()
+    total = len(vacancies)
+    paginated = vacancies[offset:offset + limit]
 
-    return VacanciesResponse(
-        total=total,
-        limit=limit,
-        offset=offset,
-        vacancies=vacancies_list
-    )
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "vacancies": paginated
+    }
 
 
-@router.get("/{vacancy_id}", response_model=Vacancy)
-async def get_vacancy_by_id_endpoint(vacancy_id: str):
-    """
-    Получить конкретную вакансию по её ID.
-    """
-    vacancy = get_vacancy_by_id(vacancy_id)
-
-    if not vacancy:
-        raise HTTPException(status_code=404, detail=f"Вакансия с ID {vacancy_id} не найдена")
-
-    return vacancy
+@router.get("/debug")
+async def debug_vacancies():
+    from app.core.data_loader import data_loader
+    vacancies = data_loader.load()
+    return {
+        "total": len(vacancies),
+        "first_5": vacancies[:5] if vacancies else [],
+        "file_exists": data_loader.file_path.exists(),
+        "file_path": str(data_loader.file_path)
+    }

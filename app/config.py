@@ -1,13 +1,18 @@
-"""
-Настройки и конфигурации приложения.
-"""
 from pathlib import Path
 from typing import Optional
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+HH_CLIENT_ID = os.getenv('HH_CLIENT_ID')
+HH_CLIENT_SECRET = os.getenv('HH_CLIENT_SECRET')
 
 # Базовые пути
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
-DATA_FILE = DATA_DIR / "mock_hh_response.json"
+DATA_FILE = DATA_DIR / "hh_km_vacancies.json"
 
 # Настройки API
 API_V1_PREFIX = "/api/v1"

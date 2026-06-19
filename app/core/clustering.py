@@ -1,3 +1,5 @@
+# Модуль кластеризации
+
 import numpy as np
 from typing import List, Dict, Any, Tuple
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -12,33 +14,18 @@ from app.core.text_analyzer import text_analyzer
 
 
 class VacancyClusterer:
-    """
-    Кластеризатор вакансий.
-    Преобразует тексты вакансий в векторы и группирует их в кластеры.
-    """
 
     def __init__(self, n_clusters: int = 5, random_state: int = 42):
-        """
-        Инициализация кластеризатора.
-
-        Args:
-            n_clusters: количество кластеров (будет подобрано автоматически, если None)
-            random_state: для воспроизводимости результатов
-        """
-        self.n_clusters = n_clusters
+        self.n_clusters = n_clusters # количество кластеров
         self.random_state = random_state
         self.vectorizer = None
         self.kmeans = None
         self.is_fitted = False
         self.silhouette_avg = 0
 
+    # Подготовка текстов для векторизации
     def prepare_texts(self, min_km_score: float = 0.1) -> Tuple[List[str], List[Dict[str, Any]]]:
-        """
-        Подготовка текстов для векторизации.
 
-        Args:
-            min_km_score: минимальный KM Score для включения вакансии (по умолчанию 0.1)
-        """
         vacancies = get_vacancies()
         texts = []
         metadata = []
@@ -77,38 +64,21 @@ class VacancyClusterer:
         print(f"Отобрано {len(texts)} вакансий с KM Score >= {min_km_score}")
         return texts, metadata
 
+    # Векторизация текста
     def vectorize(self, texts: List[str]) -> np.ndarray:
-        """
-        Векторизация текстов с помощью TF-IDF.
-
-        Args:
-            texts: список обработанных текстов
-
-        Returns:
-            np.ndarray: матрица признаков
-        """
         self.vectorizer = TfidfVectorizer(
             max_features=500,  # Ограничиваем количество признаков
             min_df=2,  # Термин должен встречаться минимум в 2 документах
             max_df=0.8,  # Игнорируем термины, встречающиеся более чем в 80% документов
-            ngram_range=(1, 2)  # Учитываем отдельные слова и биграммы
+            ngram_range=(1, 2)  # Учитываем отдельные слова
         )
 
         X = self.vectorizer.fit_transform(texts)
-        print(f"✅ Векторизация завершена: {X.shape[0]} документов, {X.shape[1]} признаков")
+        print(f"Векторизация завершена: {X.shape[0]} документов, {X.shape[1]} признаков")
         return X
 
+    # Поиск оптимального количества кластеров методом локтя
     def find_optimal_clusters(self, X: np.ndarray, max_clusters: int = 10) -> Dict[str, Any]:
-        """
-        Поиск оптимального количества кластеров методом локтя.
-
-        Args:
-            X: матрица признаков
-            max_clusters: максимальное количество кластеров для проверки
-
-        Returns:
-            Dict с метриками и рекомендованным числом кластеров
-        """
         inertias = []
         silhouette_scores = []
 
@@ -135,17 +105,9 @@ class VacancyClusterer:
             'recommended_k': best_silhouette
         }
 
+    # Обучение модели кластеризации
     def fit(self, texts: List[str], n_clusters: int = None) -> Dict[str, Any]:
-        """
-        Обучает модель кластеризации.
 
-        Args:
-            texts: список текстов
-            n_clusters: количество кластеров (если None, используется self.n_clusters)
-
-        Returns:
-            Dict с результатами обучения
-        """
         if n_clusters:
             self.n_clusters = n_clusters
 
@@ -178,17 +140,16 @@ class VacancyClusterer:
             'cluster_top_terms': self.cluster_top_terms
         }
 
+    # Возвращает размер каждого кластера
     def _get_cluster_sizes(self) -> Dict[int, int]:
-        """Возвращает размер каждого кластера."""
         sizes = {}
         for label in set(self.labels):
             sizes[int(label)] = int(np.sum(self.labels == label))
         return sizes
 
+    # Возвращает топ-термины для каждого кластера
     def _get_cluster_top_terms(self, top_n: int = 10) -> Dict[int, List[Tuple[str, float]]]:
-        """
-        Возвращает топ-термины для каждого кластера.
-        """
+
         if not self.is_fitted:
             return {}
 
@@ -206,18 +167,8 @@ class VacancyClusterer:
 
         return cluster_terms
 
+    # Предсказание кластера для нового текста
     def predict(self, text: str) -> Dict[str, Any]:
-        """
-        Предсказывает кластер для нового текста.
-
-        Args:
-            text: текст вакансии
-
-        Returns:
-            Dict с предсказанием и дистанциями
-        """
-        if not self.is_fitted:
-            raise ValueError("Модель не обучена. Сначала вызовите fit()")
 
         # Обработка текста
         cleaned = text_analyzer.clean_text(text)
@@ -237,10 +188,9 @@ class VacancyClusterer:
             'top_terms': self.cluster_top_terms.get(cluster, [])
         }
 
+    # Возвращает информацию о конкретном кластере
     def get_cluster_info(self, cluster_id: int) -> Dict[str, Any]:
-        """
-        Получает информацию о конкретном кластере.
-        """
+
         if not self.is_fitted:
             return {}
 
@@ -251,10 +201,8 @@ class VacancyClusterer:
             'silhouette_score': self.silhouette_avg
         }
 
+    # Присваивает кластеры всем вакансиям
     def assign_clusters_to_vacancies(self) -> List[Dict[str, Any]]:
-        """
-        Присваивает кластеры всем вакансиям и возвращает обогащенный список.
-        """
         if not self.is_fitted:
             return []
 
@@ -272,10 +220,9 @@ class VacancyClusterer:
 
         return results
 
+    # Получает координаты для визуализации кластеров
     def get_pca_coordinates(self) -> Dict[str, List]:
-        """
-        Получает 2D координаты для визуализации кластеров (PCA).
-        """
+
         if not self.is_fitted:
             return {}
 
@@ -332,10 +279,9 @@ class VacancyClusterer:
 clusterer = VacancyClusterer(n_clusters=4)
 
 
+# Запуск полного цикла кластеризации
 def run_clustering(n_clusters: int = 4) -> Dict[str, Any]:
-    """
-    Запускает полный процесс кластеризации.
-    """
+
     # Подготовка текстов
     texts, metadata = clusterer.prepare_texts()
 
@@ -361,11 +307,8 @@ def run_clustering(n_clusters: int = 4) -> Dict[str, Any]:
         'pca_coordinates': pca_coords
     }
 
-
+# Возвращает список вакансий с присвоенными кластерами
 def get_clustered_vacancies() -> List[Dict[str, Any]]:
-    """
-    Возвращает список вакансий с присвоенными кластерами.
-    """
     if not clusterer.is_fitted:
         # Автоматически запускаем кластеризацию с параметрами по умолчанию
         texts, _ = clusterer.prepare_texts()

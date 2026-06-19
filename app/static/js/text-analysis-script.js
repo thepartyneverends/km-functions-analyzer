@@ -1,7 +1,7 @@
 // Загрузка общей (показательной) статистики
         async function loadBatchStats() {
             try {
-                const data = await App.fetchAPI('/text-analysis/batch?limit=50');
+                const data = await App.fetchAPI('/text-analysis/batch?limit=200');
                 if (data) {
                     document.getElementById('totalAnalyzed').textContent = data.total_analyzed || 0;
                     document.getElementById('vacanciesWithKm').textContent = data.vacancies_with_km || 0;
@@ -66,8 +66,6 @@
                         <div class="analysis-result analysis-success">
                             <h3>📄 ${result.title || 'Без названия'}</h3>
                             <p><strong>🏢 Компания:</strong> ${result.employer || 'Не указана'}</p>
-                            <p><strong>🎯 Степень релевантности KM:</strong> <span class="function-badge ${scoreClass}">${Math.round(score * 100)}% (${scoreText})</span></p>
-                            <p><strong>🔧 Найденные функции KM:</strong> ${analysis.functions.length > 0 ? analysis.functions.map(f => `<span class="function-badge">${f}</span>`).join('') : '—'}</p>
                             <p><strong>📊 Всего лемм в тексте:</strong> ${analysis.total_lemmas || 0}</p>
                             <p><strong>🏆 Топ терминов:</strong></p>
                             <div class="term-list">

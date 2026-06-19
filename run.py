@@ -1,6 +1,4 @@
-"""
-Скрипт для запуска FastAPI приложения
-"""
+# запуск самого FastAPI приложения
 import uvicorn
 from app.config import HOST, PORT, RELOAD
 
