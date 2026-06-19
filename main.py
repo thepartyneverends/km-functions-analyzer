@@ -1,9 +1,10 @@
+import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
 
-from app.config import API_TITLE, API_DESCRIPTION, API_VERSION, API_V1_PREFIX
+from app.config import API_TITLE, API_DESCRIPTION, API_VERSION, API_V1_PREFIX, HOST, PORT, RELOAD
 from app.api.routers import vacancies, stats, skills, search, km_analysis, text_analysis, clustering
 
 app = FastAPI(title=API_TITLE, description=API_DESCRIPTION, version=API_VERSION)
@@ -32,3 +33,12 @@ async def root():
 @app.get("/health", include_in_schema=False)
 async def health_check():
     return {"status": "ok", "service": API_TITLE}
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host=HOST,
+        port=PORT,
+        reload=RELOAD,
+        log_level="info"
+    )
